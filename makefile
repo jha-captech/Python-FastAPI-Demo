@@ -1,4 +1,4 @@
-run-dev:
+run:
 	@fastapi dev ./src/main.py
 
 start-db:

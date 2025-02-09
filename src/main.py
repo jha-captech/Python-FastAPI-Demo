@@ -2,6 +2,9 @@ from typing import Union
 
 from fastapi import FastAPI
 
+from settings import get_settings
+
+settings = get_settings()
 app = FastAPI()
 
 
