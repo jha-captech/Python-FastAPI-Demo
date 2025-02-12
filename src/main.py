@@ -1,62 +1,27 @@
-from typing import Annotated, Any, Generator
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends
-from psycopg import Connection
-from psycopg_pool import ConnectionPool
-from pydantic import BaseModel
+import uvicorn
+from fastapi import FastAPI
+from loguru import logger
 
-from settings import get_settings
-
-settings = get_settings()
-app = FastAPI()
-
-pool = ConnectionPool(
-    conninfo=f"postgresql://{settings.database_user}:{settings.database_password.get_secret_value()}@{settings.database_host}:{settings.database_port}/{settings.database_name}",
-    open=True,
-)
+from api.router import api_router
+from services.db import pool
 
 
-def get_connection_from_pool() -> Generator[Connection, Any, None]:
-    print("running get_connection_from_pool")
-    conn = pool.getconn()
-    try:
-        yield conn
-    finally:
-        pool.putconn(conn)
+@asynccontextmanager
+async def lifespan(instance: FastAPI):
+    logger.info("Opening connection pool")
+    await pool.open()
+
+    yield
+
+    logger.info("Closing connection pool")
+    await pool.close()
 
 
-@app.get("/health")
-def read_root():
-    return {"status": "healthy"}
+app = FastAPI(lifespan=lifespan)
 
+app.include_router(api_router)
 
-class Author(BaseModel):
-    id: int
-    first_name: str
-    middle_name: str | None
-    last_name: str
-
-
-class AuthorService:
-    def __init__(self, conn: Annotated[Connection, Depends(get_connection_from_pool)]):
-        self.conn = conn
-
-    def get_all_authors(self) -> list[Author]:
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT * FROM authors")
-            authors = cur.fetchall()
-
-        return [
-            Author(
-                id=author[0],
-                first_name=author[1],
-                middle_name=author[2],
-                last_name=author[3],
-            )
-            for author in authors
-        ]
-
-
-@app.get("/authors")
-def read_item(service: Annotated[AuthorService, Depends()]) -> list[Author]:
-    return service.get_all_authors()
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

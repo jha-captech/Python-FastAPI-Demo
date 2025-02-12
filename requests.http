@@ -2,4 +2,4 @@
 GET http://localhost:8000/health
 
 ### get all authors
-GET http://localhost:8000/authors
+GET http://localhost:8000/author
