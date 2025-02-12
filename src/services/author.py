@@ -12,7 +12,13 @@ class AuthorService:
         logger.info("Getting all authors")
 
         async with self.conn.cursor() as cur:
-            await cur.execute("SELECT * FROM authors")
+            await cur.execute(
+                """
+                SELECT a.id, a.first_name, a.middle_name, a.last_name
+                FROM authors as a
+                """
+            )
+
             authors = await cur.fetchall()
 
         return [
@@ -25,12 +31,23 @@ class AuthorService:
             for author in authors
         ]
 
-    async def get_author_by_id(self, author_id: int) -> Author:
+    async def get_author_by_id(self, author_id: int) -> Author | None:
         logger.info(f"Getting author with id {author_id}")
 
         async with self.conn.cursor() as cur:
-            await cur.execute("SELECT * FROM authors WHERE id = %s", (author_id,))
+            await cur.execute(
+                """
+                SELECT a.id, a.first_name, a.middle_name, a.last_name
+                FROM authors as a
+                WHERE a.id = %s
+                """,
+                (author_id,),
+            )
+
             author = await cur.fetchone()
+
+        if author is None:
+            return None
 
         return Author(
             id=author[0],

@@ -3,3 +3,9 @@ GET http://localhost:8000/health
 
 ### get all authors
 GET http://localhost:8000/author
+
+### get author by id
+GET http://localhost:8000/author/1
+
+### get author by id (does not exist)
+GET http://localhost:8000/author/100

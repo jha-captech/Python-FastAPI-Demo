@@ -1,5 +1,5 @@
-from psycopg_pool import AsyncConnectionPool
 from loguru import logger
+from psycopg_pool import AsyncConnectionPool
 
 from settings import get_settings
 
