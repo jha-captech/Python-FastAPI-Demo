@@ -4,5 +4,5 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 
 @router.get("/")
-def read_root():
+def health():
     return {"status": "healthy"}

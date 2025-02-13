@@ -22,5 +22,11 @@ def get_settings():
 
 
 if __name__ == "__main__":
-    settings = Settings()
+    settings = Settings(
+        database_password="password",
+        database_user="user",
+        database_name="name",
+        database_host="host",
+        database_port=0000,
+    )
     print(settings.model_dump_json(indent=2))

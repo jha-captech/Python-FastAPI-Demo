@@ -1,7 +1,7 @@
 from loguru import logger
 from psycopg_pool import AsyncConnectionPool
 
-from settings import get_settings
+from app.settings import get_settings
 
 settings = get_settings()
 
