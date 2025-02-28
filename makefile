@@ -1,5 +1,5 @@
 run:
-	@fastapi dev ./src/main.py
+	@fastapi dev ./app/main.py
 
 start-db:
 	@colima start

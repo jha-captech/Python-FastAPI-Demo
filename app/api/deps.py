@@ -1,14 +1,19 @@
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
+from loguru import logger
 from psycopg import AsyncConnection
 
 from services.author import AuthorService
-from services.db import pool
+from services.db import get_pool
 
 
 async def get_conn() -> AsyncGenerator[AsyncConnection, None]:
+    logger.debug("getting connection pool")
+    pool = get_pool()
+
     async with pool.connection() as conn:
+        logger.debug("yielding connection from pool")
         yield conn
 
 

@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncio>=3.4.3",
+    "coverage>=7.6.12",
     "fastapi[standard]>=0.115.8",
     "loguru>=0.7.3",
     "psycopg[binary,pool]>=3.2.4",
@@ -19,3 +21,13 @@ venv = ".venv"
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=0.25.3",
+]

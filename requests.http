@@ -9,3 +9,13 @@ GET http://localhost:8000/author/1
 
 ### get author by id (does not exist)
 GET http://localhost:8000/author/100
+
+### create author
+POST http://localhost:8000/author
+Content-Type: application/json
+
+{
+  "first_name": "jonas",
+  "middle_name": null,
+  "last_name": "ha"
+}
