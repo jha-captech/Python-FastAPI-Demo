@@ -15,7 +15,7 @@ from api.routes.author import (
 from models.author import Author
 from services.author import AuthorService
 from services.exceptions import AuthorAlreadyExistsError, AuthorNotFoundError
-from tests.helper import to_json_string
+from tests.helper import to_json_bytes
 
 
 @pytest.fixture
@@ -56,7 +56,7 @@ async def test_get_author_by_id_returns_not_found(mock_service) -> None:
     response = await get_author_by_id(2, mock_service)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.body == to_json_string({"detail": "Author not found"})
+    assert response.body == to_json_bytes({"detail": "Author not found"})
 
 
 async def test_create_author_successfully(mock_service):
@@ -83,7 +83,7 @@ async def test_create_author_already_exists(mock_service):
     response = await create_author(input_request, mock_service)
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.body == to_json_string(
+    assert response.body == to_json_bytes(
         {"detail": "Author with provided name already exists"}
     )
 
@@ -110,7 +110,7 @@ async def test_update_author_already_exists(mock_service):
     response = await update_author(1, input_request, mock_service)
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.body == to_json_string(
+    assert response.body == to_json_bytes(
         {"detail": "Author with provided name already exists"}
     )
 
@@ -123,7 +123,7 @@ async def test_update_author_author_not_found(mock_service):
     response = await update_author(1, input_request, mock_service)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.body == to_json_string({"detail": "Author not found"})
+    assert response.body == to_json_bytes({"detail": "Author not found"})
 
 
 async def test_delete_author_successfully(mock_service):
@@ -138,4 +138,4 @@ async def test_delete_author_not_found(mock_service):
     response = await delete_author(1, mock_service)
 
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.body == to_json_string({"detail": "Author not found"})
+    assert response.body == to_json_bytes({"detail": "Author not found"})

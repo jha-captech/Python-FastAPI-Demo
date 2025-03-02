@@ -7,5 +7,5 @@ if TYPE_CHECKING:
     from typing import Any
 
 
-def to_json_string(data: dict[Any, Any]) -> bytes:
+def to_json_bytes(data: dict[Any, Any]) -> bytes:
     return json.dumps(data, separators=(",", ":")).encode("utf-8")
