@@ -19,3 +19,16 @@ Content-Type: application/json
   "middle_name": null,
   "last_name": "ha"
 }
+
+### update author
+PUT http://localhost:8000/author/12
+Content-Type: application/json
+
+{
+  "first_name": "j",
+  "middle_name": "d",
+  "last_name": "ha"
+}
+
+### delete author
+DELETE http://localhost:8000/author/12

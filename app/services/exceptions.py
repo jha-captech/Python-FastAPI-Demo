@@ -8,3 +8,15 @@ class AuthorAlreadyExistsError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class AuthorNotFoundError(Exception):
+    """Exception raised when an auther is not found in the DB.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

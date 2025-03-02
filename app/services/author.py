@@ -6,7 +6,7 @@ from loguru import logger
 from psycopg.rows import dict_row
 
 from models.author import Author
-from services.exceptions import AuthorAlreadyExistsError
+from services.exceptions import AuthorAlreadyExistsError, AuthorNotFoundError
 
 if TYPE_CHECKING:
     from psycopg import AsyncConnection
@@ -39,9 +39,9 @@ class AuthorService:
                 """
                 SELECT a.id, a.first_name, a.middle_name, a.last_name
                 FROM authors as a
-                WHERE a.id = %s
+                WHERE a.id = %(author_id)s
                 """,
-                (author_id,),
+                {"author_id": author_id},
             )
 
             author = await cur.fetchone()
@@ -74,20 +74,20 @@ class AuthorService:
 
             if response.get("count", 0) > 0:
                 raise AuthorAlreadyExistsError(
-                    f"An author with name {author.first_name} {author.middle_name} {author.last_name} already exists"
+                    "An author with the same name already exists"
                 )
 
             await cur.execute(
                 """
                     INSERT INTO authors (first_name, middle_name, last_name)
-                    VALUES (%s, %s, %s)
+                    VALUES (%(first_name)s, %(middle_name)s, %(last_name)s)
                     RETURNING id
                     """,
-                (
-                    author.first_name,
-                    author.middle_name,
-                    author.last_name,
-                ),
+                {
+                    "first_name": author.first_name,
+                    "middle_name": author.middle_name,
+                    "last_name": author.last_name,
+                },
             )
 
             response = await cur.fetchone()
@@ -95,3 +95,74 @@ class AuthorService:
         author.id = response["id"]
 
         return author
+
+    async def update_author(self, author: Author) -> None:
+        logger.info(f"Updating author with id {author.id}")
+
+        async with self.conn.cursor(row_factory=dict_row) as cur:
+            # check if input values will cause a conflict
+            await cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM authors
+                WHERE id <> %(id)s
+                  AND LOWER(first_name) = LOWER(%(first_name)s)
+                  AND COALESCE(LOWER(middle_name), '') = COALESCE(LOWER(%(middle_name)s), '')
+                  AND LOWER(last_name) = LOWER(%(last_name)s)
+                """,
+                {
+                    "id": author.id,
+                    "first_name": author.first_name,
+                    "middle_name": author.middle_name,
+                    "last_name": author.last_name,
+                },
+            )
+
+            response = await cur.fetchone()
+
+            if response.get("count", 0) > 0:
+                raise AuthorAlreadyExistsError(
+                    "An author with the same name already exists"
+                )
+
+            # update author
+            await cur.execute(
+                """
+                UPDATE authors
+                SET first_name = %(first_name)s,
+                   middle_name = %(middle_name)s,
+                   last_name = %(last_name)s
+                WHERE id = %(id)s
+                RETURNING id
+                """,
+                {
+                    "id": author.id,
+                    "first_name": author.first_name,
+                    "middle_name": author.middle_name,
+                    "last_name": author.last_name,
+                },
+            )
+
+            response = await cur.fetchone()
+
+            if response is None:
+                raise AuthorNotFoundError("Author not found")
+
+    async def delete_author(self, author_id: int) -> None:
+        logger.info(f"Deleting author with id {author_id}")
+
+        async with self.conn.cursor(row_factory=dict_row) as cur:
+            await cur.execute(
+                """
+                DELETE
+                FROM authors
+                WHERE id = %(id)s
+                RETURNING id
+                """,
+                {"id": author_id},
+            )
+
+            response = await cur.fetchone()
+
+            if response is None:
+                raise AuthorNotFoundError("Author not found")
